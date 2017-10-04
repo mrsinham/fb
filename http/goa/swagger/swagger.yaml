@@ -1,0 +1,129 @@
+consumes:
+- application/json
+definitions:
+  error:
+    description: Error response media type (default view)
+    example:
+      code: invalid_value
+      detail: Value of ID must be an integer
+      id: 3F1FKVRR
+      meta:
+        timestamp: 1.458609e+09
+      status: "400"
+    properties:
+      code:
+        description: an application-specific error code, expressed as a string value.
+        example: invalid_value
+        type: string
+      detail:
+        description: a human-readable explanation specific to this occurrence of the
+          problem.
+        example: Value of ID must be an integer
+        type: string
+      id:
+        description: a unique identifier for this particular occurrence of the problem.
+        example: 3F1FKVRR
+        type: string
+      meta:
+        additionalProperties: true
+        description: a meta object containing non-standard meta-information about
+          the error.
+        example:
+          timestamp: 1.458609e+09
+        type: object
+      status:
+        description: the HTTP status code applicable to this problem, expressed as
+          a string value.
+        example: "400"
+        type: string
+    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
+    type: object
+info:
+  description: The next step into fizzbuzz
+  title: Fizzbuzz
+  version: ""
+paths:
+  /fizz/buzz:
+    get:
+      description: 'given the two string and the fizzbuzz param, you will have the
+        fizzbuzz algorithm applied : a json string array from 1 to limit where the
+        offset is replaced with string1 when the offset is a multiplier of int1 and
+        replaced with string2 if the offset is a multiplier of int2. If the offset
+        is a multiplier of both int1 and int2, the offset will be replaced by string1+string2'
+      operationId: fizz#buzz
+      parameters:
+      - description: if the offset of the response array is a multiplier of int1,
+          replace with string1
+        in: query
+        minimum: 1
+        name: int1
+        required: true
+        type: integer
+      - description: if the offset of the response array is a multiplier of int2,
+          replace with string2
+        in: query
+        minimum: 1
+        name: int2
+        required: true
+        type: integer
+      - description: the fizzbuzz algorithm will produce an array up to the given
+          limit
+        in: query
+        minimum: 1
+        name: limit
+        required: true
+        type: integer
+      - description: the first string, this is the fizz string
+        in: query
+        minLength: 2
+        name: string1
+        required: true
+        type: string
+      - description: the second string, this is the buzz string
+        in: query
+        minLength: 2
+        name: string2
+        required: true
+        type: string
+      produces:
+      - application/vnd.goa.error
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error'
+      schemes:
+      - http
+      summary: buzz fizz
+      tags:
+      - fizz
+  /swagger.json:
+    get:
+      operationId: spec#/swagger.json
+      responses:
+        "200":
+          description: File downloaded
+          schema:
+            type: file
+      schemes:
+      - http
+      summary: Download http/goa/swagger/swagger.json
+  /swagger.yaml:
+    get:
+      operationId: spec#/swagger.yaml
+      responses:
+        "200":
+          description: File downloaded
+          schema:
+            type: file
+      schemes:
+      - http
+      summary: Download http/goa/swagger/swagger.yaml
+produces:
+- application/json
+schemes:
+- http
+swagger: "2.0"
