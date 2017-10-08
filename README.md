@@ -228,7 +228,7 @@ Goa generates handlers in the http/goa package. After generating the skeleton it
 
 ### Testing
 
-```go
+```
  go test -v $(go list ./... | grep -v /vendor/)
 ```
 
