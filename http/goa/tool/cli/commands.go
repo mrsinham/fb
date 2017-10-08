@@ -42,6 +42,26 @@ type (
 		PrettyPrint bool
 	}
 
+	// BuzzCacheFizzCommand is the command line data structure for the buzz_cache action of fizz
+	BuzzCacheFizzCommand struct {
+		// if the offset of the response array is a multiplier of int1, replace with string1
+		Int1 int
+		// if the offset of the response array is a multiplier of int2, replace with string2
+		Int2 int
+		// the fizzbuzz algorithm will produce an array up to the given limit
+		Limit int
+		// the first string, this is the fizz string
+		String1 string
+		// the second string, this is the buzz string
+		String2     string
+		PrettyPrint bool
+	}
+
+	// ExpireCacheFizzCommand is the command line data structure for the expire_cache action of fizz
+	ExpireCacheFizzCommand struct {
+		PrettyPrint bool
+	}
+
 	// DownloadCommand is the command line data structure for the download command.
 	DownloadCommand struct {
 		// OutFile is the path to the download output file.
@@ -64,6 +84,34 @@ func RegisterCommands(app *cobra.Command, c *client.Client) {
 	}
 	tmp1.RegisterFlags(sub, c)
 	sub.PersistentFlags().BoolVar(&tmp1.PrettyPrint, "pp", false, "Pretty print response body")
+	command.AddCommand(sub)
+	app.AddCommand(command)
+	command = &cobra.Command{
+		Use:   "buzz-cache",
+		Short: `same as buzz, but with cache`,
+	}
+	tmp2 := new(BuzzCacheFizzCommand)
+	sub = &cobra.Command{
+		Use:   `fizz ["/fizz/buzz_cache"]`,
+		Short: ``,
+		RunE:  func(cmd *cobra.Command, args []string) error { return tmp2.Run(c, args) },
+	}
+	tmp2.RegisterFlags(sub, c)
+	sub.PersistentFlags().BoolVar(&tmp2.PrettyPrint, "pp", false, "Pretty print response body")
+	command.AddCommand(sub)
+	app.AddCommand(command)
+	command = &cobra.Command{
+		Use:   "expire-cache",
+		Short: `expire all cached entries`,
+	}
+	tmp3 := new(ExpireCacheFizzCommand)
+	sub = &cobra.Command{
+		Use:   `fizz ["/fizz/expire_cache"]`,
+		Short: ``,
+		RunE:  func(cmd *cobra.Command, args []string) error { return tmp3.Run(c, args) },
+	}
+	tmp3.RegisterFlags(sub, c)
+	sub.PersistentFlags().BoolVar(&tmp3.PrettyPrint, "pp", false, "Pretty print response body")
 	command.AddCommand(sub)
 	app.AddCommand(command)
 
@@ -310,4 +358,62 @@ func (cmd *BuzzFizzCommand) RegisterFlags(cc *cobra.Command, c *client.Client) {
 	cc.Flags().StringVar(&cmd.String1, "string1", string1, `the first string, this is the fizz string`)
 	var string2 string
 	cc.Flags().StringVar(&cmd.String2, "string2", string2, `the second string, this is the buzz string`)
+}
+
+// Run makes the HTTP request corresponding to the BuzzCacheFizzCommand command.
+func (cmd *BuzzCacheFizzCommand) Run(c *client.Client, args []string) error {
+	var path string
+	if len(args) > 0 {
+		path = args[0]
+	} else {
+		path = "/fizz/buzz_cache"
+	}
+	logger := goa.NewLogger(log.New(os.Stderr, "", log.LstdFlags))
+	ctx := goa.WithLogger(context.Background(), logger)
+	resp, err := c.BuzzCacheFizz(ctx, path, cmd.Int1, cmd.Int2, cmd.Limit, cmd.String1, cmd.String2)
+	if err != nil {
+		goa.LogError(ctx, "failed", "err", err)
+		return err
+	}
+
+	goaclient.HandleResponse(c.Client, resp, cmd.PrettyPrint)
+	return nil
+}
+
+// RegisterFlags registers the command flags with the command line.
+func (cmd *BuzzCacheFizzCommand) RegisterFlags(cc *cobra.Command, c *client.Client) {
+	var int1 int
+	cc.Flags().IntVar(&cmd.Int1, "int1", int1, `if the offset of the response array is a multiplier of int1, replace with string1`)
+	var int2 int
+	cc.Flags().IntVar(&cmd.Int2, "int2", int2, `if the offset of the response array is a multiplier of int2, replace with string2`)
+	var limit int
+	cc.Flags().IntVar(&cmd.Limit, "limit", limit, `the fizzbuzz algorithm will produce an array up to the given limit`)
+	var string1 string
+	cc.Flags().StringVar(&cmd.String1, "string1", string1, `the first string, this is the fizz string`)
+	var string2 string
+	cc.Flags().StringVar(&cmd.String2, "string2", string2, `the second string, this is the buzz string`)
+}
+
+// Run makes the HTTP request corresponding to the ExpireCacheFizzCommand command.
+func (cmd *ExpireCacheFizzCommand) Run(c *client.Client, args []string) error {
+	var path string
+	if len(args) > 0 {
+		path = args[0]
+	} else {
+		path = "/fizz/expire_cache"
+	}
+	logger := goa.NewLogger(log.New(os.Stderr, "", log.LstdFlags))
+	ctx := goa.WithLogger(context.Background(), logger)
+	resp, err := c.ExpireCacheFizz(ctx, path)
+	if err != nil {
+		goa.LogError(ctx, "failed", "err", err)
+		return err
+	}
+
+	goaclient.HandleResponse(c.Client, resp, cmd.PrettyPrint)
+	return nil
+}
+
+// RegisterFlags registers the command flags with the command line.
+func (cmd *ExpireCacheFizzCommand) RegisterFlags(cc *cobra.Command, c *client.Client) {
 }

@@ -91,6 +91,8 @@ paths:
       responses:
         "200":
           description: OK
+        "400":
+          description: Bad Request
         "500":
           description: Internal Server Error
           schema:
@@ -98,6 +100,73 @@ paths:
       schemes:
       - http
       summary: buzz fizz
+      tags:
+      - fizz
+  /fizz/buzz_cache:
+    get:
+      description: same as buzz, but with cache
+      operationId: fizz#buzz_cache
+      parameters:
+      - description: if the offset of the response array is a multiplier of int1,
+          replace with string1
+        in: query
+        minimum: 1
+        name: int1
+        required: true
+        type: integer
+      - description: if the offset of the response array is a multiplier of int2,
+          replace with string2
+        in: query
+        minimum: 1
+        name: int2
+        required: true
+        type: integer
+      - description: the fizzbuzz algorithm will produce an array up to the given
+          limit
+        in: query
+        minimum: 1
+        name: limit
+        required: true
+        type: integer
+      - description: the first string, this is the fizz string
+        in: query
+        minLength: 2
+        name: string1
+        required: true
+        type: string
+      - description: the second string, this is the buzz string
+        in: query
+        minLength: 2
+        name: string2
+        required: true
+        type: string
+      produces:
+      - application/vnd.goa.error
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error'
+      schemes:
+      - http
+      summary: buzz_cache fizz
+      tags:
+      - fizz
+  /fizz/expire_cache:
+    get:
+      description: expire all cached entries
+      operationId: fizz#expire_cache
+      responses:
+        "200":
+          description: OK
+      schemes:
+      - http
+      summary: expire_cache fizz
       tags:
       - fizz
   /swagger.json:
@@ -124,6 +193,11 @@ paths:
       summary: Download http/goa/swagger/swagger.yaml
 produces:
 - application/json
+responses:
+  BadRequest:
+    description: Bad Request
+  OK:
+    description: OK
 schemes:
 - http
 swagger: "2.0"

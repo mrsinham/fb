@@ -41,15 +41,83 @@ func (c *Client) NewBuzzFizzRequest(ctx context.Context, path string, int1 int, 
 	}
 	u := url.URL{Host: c.Host, Scheme: scheme, Path: path}
 	values := u.Query()
-	tmp2 := strconv.Itoa(int1)
-	values.Set("int1", tmp2)
-	tmp3 := strconv.Itoa(int2)
-	values.Set("int2", tmp3)
-	tmp4 := strconv.Itoa(limit)
-	values.Set("limit", tmp4)
+	tmp4 := strconv.Itoa(int1)
+	values.Set("int1", tmp4)
+	tmp5 := strconv.Itoa(int2)
+	values.Set("int2", tmp5)
+	tmp6 := strconv.Itoa(limit)
+	values.Set("limit", tmp6)
 	values.Set("string1", string1)
 	values.Set("string2", string2)
 	u.RawQuery = values.Encode()
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
+// BuzzCacheFizzPath computes a request path to the buzz_cache action of fizz.
+func BuzzCacheFizzPath() string {
+
+	return fmt.Sprintf("/fizz/buzz_cache")
+}
+
+// same as buzz, but with cache
+func (c *Client) BuzzCacheFizz(ctx context.Context, path string, int1 int, int2 int, limit int, string1 string, string2 string) (*http.Response, error) {
+	req, err := c.NewBuzzCacheFizzRequest(ctx, path, int1, int2, limit, string1, string2)
+	if err != nil {
+		return nil, err
+	}
+	return c.Client.Do(ctx, req)
+}
+
+// NewBuzzCacheFizzRequest create the request corresponding to the buzz_cache action endpoint of the fizz resource.
+func (c *Client) NewBuzzCacheFizzRequest(ctx context.Context, path string, int1 int, int2 int, limit int, string1 string, string2 string) (*http.Request, error) {
+	scheme := c.Scheme
+	if scheme == "" {
+		scheme = "http"
+	}
+	u := url.URL{Host: c.Host, Scheme: scheme, Path: path}
+	values := u.Query()
+	tmp7 := strconv.Itoa(int1)
+	values.Set("int1", tmp7)
+	tmp8 := strconv.Itoa(int2)
+	values.Set("int2", tmp8)
+	tmp9 := strconv.Itoa(limit)
+	values.Set("limit", tmp9)
+	values.Set("string1", string1)
+	values.Set("string2", string2)
+	u.RawQuery = values.Encode()
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
+// ExpireCacheFizzPath computes a request path to the expire_cache action of fizz.
+func ExpireCacheFizzPath() string {
+
+	return fmt.Sprintf("/fizz/expire_cache")
+}
+
+// expire all cached entries
+func (c *Client) ExpireCacheFizz(ctx context.Context, path string) (*http.Response, error) {
+	req, err := c.NewExpireCacheFizzRequest(ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	return c.Client.Do(ctx, req)
+}
+
+// NewExpireCacheFizzRequest create the request corresponding to the expire_cache action endpoint of the fizz resource.
+func (c *Client) NewExpireCacheFizzRequest(ctx context.Context, path string) (*http.Request, error) {
+	scheme := c.Scheme
+	if scheme == "" {
+		scheme = "http"
+	}
+	u := url.URL{Host: c.Host, Scheme: scheme, Path: path}
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, err

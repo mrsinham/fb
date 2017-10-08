@@ -32,6 +32,8 @@ func initService(service *goa.Service) {
 type FizzController interface {
 	goa.Muxer
 	Buzz(*BuzzFizzContext) error
+	BuzzCache(*BuzzCacheFizzContext) error
+	ExpireCache(*ExpireCacheFizzContext) error
 }
 
 // MountFizzController "mounts" a Fizz resource controller on the given service.
@@ -51,8 +53,38 @@ func MountFizzController(service *goa.Service, ctrl FizzController) {
 		}
 		return ctrl.Buzz(rctx)
 	}
-	service.Mux.Handle("GET", "/fizz/buzz", ctrl.MuxHandler("buzz", h, nil))
+	service.Mux.Handle("GET", "/fizz/buzz", ctrl.MuxHandler("Buzz", h, nil))
 	service.LogInfo("mount", "ctrl", "Fizz", "action", "Buzz", "route", "GET /fizz/buzz")
+
+	h = func(ctx context.Context, rw http.ResponseWriter, req *http.Request) error {
+		// Check if there was an error loading the request
+		if err := goa.ContextError(ctx); err != nil {
+			return err
+		}
+		// Build the context
+		rctx, err := NewBuzzCacheFizzContext(ctx, req, service)
+		if err != nil {
+			return err
+		}
+		return ctrl.BuzzCache(rctx)
+	}
+	service.Mux.Handle("GET", "/fizz/buzz_cache", ctrl.MuxHandler("BuzzCache", h, nil))
+	service.LogInfo("mount", "ctrl", "Fizz", "action", "BuzzCache", "route", "GET /fizz/buzz_cache")
+
+	h = func(ctx context.Context, rw http.ResponseWriter, req *http.Request) error {
+		// Check if there was an error loading the request
+		if err := goa.ContextError(ctx); err != nil {
+			return err
+		}
+		// Build the context
+		rctx, err := NewExpireCacheFizzContext(ctx, req, service)
+		if err != nil {
+			return err
+		}
+		return ctrl.ExpireCache(rctx)
+	}
+	service.Mux.Handle("GET", "/fizz/expire_cache", ctrl.MuxHandler("ExpireCache", h, nil))
+	service.LogInfo("mount", "ctrl", "Fizz", "action", "ExpireCache", "route", "GET /fizz/expire_cache")
 }
 
 // SpecController is the controller interface for the Spec actions.

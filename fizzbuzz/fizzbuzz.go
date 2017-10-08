@@ -10,6 +10,7 @@ import (
 // the backing array dont has to be reallocated many time before being of the final size
 func Naive(ctx context.Context, string1 string, string2 string, int1 int, int2 int, limit int) (res []string, err error) {
 
+	// allocation magic here
 	res = make([]string, limit)
 	for i := 1; i <= limit; i++ {
 		select {

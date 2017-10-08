@@ -110,8 +110,147 @@ func (ctx *BuzzFizzContext) OK(r []string) error {
 	return ctx.ResponseData.Service.Send(ctx.Context, 200, r)
 }
 
+// BadRequest sends a HTTP response with status code 400.
+func (ctx *BuzzFizzContext) BadRequest() error {
+	ctx.ResponseData.WriteHeader(400)
+	return nil
+}
+
 // InternalServerError sends a HTTP response with status code 500.
 func (ctx *BuzzFizzContext) InternalServerError(r error) error {
 	ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.error")
 	return ctx.ResponseData.Service.Send(ctx.Context, 500, r)
+}
+
+// BuzzCacheFizzContext provides the fizz buzz_cache action context.
+type BuzzCacheFizzContext struct {
+	context.Context
+	*goa.ResponseData
+	*goa.RequestData
+	Int1    int
+	Int2    int
+	Limit   int
+	String1 string
+	String2 string
+}
+
+// NewBuzzCacheFizzContext parses the incoming request URL and body, performs validations and creates the
+// context used by the fizz controller buzz_cache action.
+func NewBuzzCacheFizzContext(ctx context.Context, r *http.Request, service *goa.Service) (*BuzzCacheFizzContext, error) {
+	var err error
+	resp := goa.ContextResponse(ctx)
+	resp.Service = service
+	req := goa.ContextRequest(ctx)
+	req.Request = r
+	rctx := BuzzCacheFizzContext{Context: ctx, ResponseData: resp, RequestData: req}
+	paramInt1 := req.Params["int1"]
+	if len(paramInt1) == 0 {
+		err = goa.MergeErrors(err, goa.MissingParamError("int1"))
+	} else {
+		rawInt1 := paramInt1[0]
+		if int1, err2 := strconv.Atoi(rawInt1); err2 == nil {
+			rctx.Int1 = int1
+		} else {
+			err = goa.MergeErrors(err, goa.InvalidParamTypeError("int1", rawInt1, "integer"))
+		}
+		if rctx.Int1 < 1 {
+			err = goa.MergeErrors(err, goa.InvalidRangeError(`int1`, rctx.Int1, 1, true))
+		}
+	}
+	paramInt2 := req.Params["int2"]
+	if len(paramInt2) == 0 {
+		err = goa.MergeErrors(err, goa.MissingParamError("int2"))
+	} else {
+		rawInt2 := paramInt2[0]
+		if int2, err2 := strconv.Atoi(rawInt2); err2 == nil {
+			rctx.Int2 = int2
+		} else {
+			err = goa.MergeErrors(err, goa.InvalidParamTypeError("int2", rawInt2, "integer"))
+		}
+		if rctx.Int2 < 1 {
+			err = goa.MergeErrors(err, goa.InvalidRangeError(`int2`, rctx.Int2, 1, true))
+		}
+	}
+	paramLimit := req.Params["limit"]
+	if len(paramLimit) == 0 {
+		err = goa.MergeErrors(err, goa.MissingParamError("limit"))
+	} else {
+		rawLimit := paramLimit[0]
+		if limit, err2 := strconv.Atoi(rawLimit); err2 == nil {
+			rctx.Limit = limit
+		} else {
+			err = goa.MergeErrors(err, goa.InvalidParamTypeError("limit", rawLimit, "integer"))
+		}
+		if rctx.Limit < 1 {
+			err = goa.MergeErrors(err, goa.InvalidRangeError(`limit`, rctx.Limit, 1, true))
+		}
+	}
+	paramString1 := req.Params["string1"]
+	if len(paramString1) == 0 {
+		err = goa.MergeErrors(err, goa.MissingParamError("string1"))
+	} else {
+		rawString1 := paramString1[0]
+		rctx.String1 = rawString1
+		if utf8.RuneCountInString(rctx.String1) < 2 {
+			err = goa.MergeErrors(err, goa.InvalidLengthError(`string1`, rctx.String1, utf8.RuneCountInString(rctx.String1), 2, true))
+		}
+	}
+	paramString2 := req.Params["string2"]
+	if len(paramString2) == 0 {
+		err = goa.MergeErrors(err, goa.MissingParamError("string2"))
+	} else {
+		rawString2 := paramString2[0]
+		rctx.String2 = rawString2
+		if utf8.RuneCountInString(rctx.String2) < 2 {
+			err = goa.MergeErrors(err, goa.InvalidLengthError(`string2`, rctx.String2, utf8.RuneCountInString(rctx.String2), 2, true))
+		}
+	}
+	return &rctx, err
+}
+
+// OK sends a HTTP response with status code 200.
+func (ctx *BuzzCacheFizzContext) OK(resp []byte) error {
+	ctx.ResponseData.Header().Set("Content-Type", "application/json")
+	ctx.ResponseData.WriteHeader(200)
+	_, err := ctx.ResponseData.Write(resp)
+	return err
+}
+
+// BadRequest sends a HTTP response with status code 400.
+func (ctx *BuzzCacheFizzContext) BadRequest() error {
+	ctx.ResponseData.WriteHeader(400)
+	return nil
+}
+
+// InternalServerError sends a HTTP response with status code 500.
+func (ctx *BuzzCacheFizzContext) InternalServerError(r error) error {
+	ctx.ResponseData.Header().Set("Content-Type", "application/vnd.goa.error")
+	return ctx.ResponseData.Service.Send(ctx.Context, 500, r)
+}
+
+// ExpireCacheFizzContext provides the fizz expire_cache action context.
+type ExpireCacheFizzContext struct {
+	context.Context
+	*goa.ResponseData
+	*goa.RequestData
+}
+
+// NewExpireCacheFizzContext parses the incoming request URL and body, performs validations and creates the
+// context used by the fizz controller expire_cache action.
+func NewExpireCacheFizzContext(ctx context.Context, r *http.Request, service *goa.Service) (*ExpireCacheFizzContext, error) {
+	var err error
+	resp := goa.ContextResponse(ctx)
+	resp.Service = service
+	req := goa.ContextRequest(ctx)
+	req.Request = r
+	rctx := ExpireCacheFizzContext{Context: ctx, ResponseData: resp, RequestData: req}
+	return &rctx, err
+}
+
+// OK sends a HTTP response with status code 200.
+func (ctx *ExpireCacheFizzContext) OK(resp []byte) error {
+	ctx.ResponseData.Header().Set("Content-Type", "application/json")
+	ctx.ResponseData.WriteHeader(200)
+	_, err := ctx.ResponseData.Write(resp)
+	return err
 }

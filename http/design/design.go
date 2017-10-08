@@ -59,17 +59,48 @@ var _ = Resource("fizz", func() {
 
 		Response(OK, ArrayOf(String), func() {})
 		Response(InternalServerError, ErrorMedia)
+		Response(BadRequest)
 
 	})
 
-})
+	Action("buzz_cache", func() {
+		Routing(GET("buzz_cache"))
+		Description("same as buzz, but with cache")
+		Params(func() {
+			Param("string1", String, "the first string, this is the fizz string", func() {
+				Example("fizz")
+				MinLength(2)
+			})
+			Param("string2", String, "the second string, this is the buzz string", func() {
+				Example("buzz")
+				MinLength(2)
+			})
+			Param("int1", Integer, "if the offset of the response array is a multiplier of int1, replace with string1", func() {
+				Example(3)
+				Minimum(1)
+			})
+			Param("int2", Integer, "if the offset of the response array is a multiplier of int2, replace with string2", func() {
+				Example(5)
+				Minimum(1)
+			})
+			Param("limit", Integer, "the fizzbuzz algorithm will produce an array up to the given limit", func() {
+				Example(15)
+				Minimum(1)
+			})
 
-//
-//var fizzbuzz = MediaType("application/fizz.buzz", func() {
-//	Description("the list of the fizz buzz suite, an array of string")
-//	Attribute("list", ArrayOf(String))
-//	ContentType("application/json")
-//	View("default", func() {
-//		Attribute("list")
-//	})
-//})
+			Required("string1", "string2", "int1", "int2", "limit")
+		})
+
+		Response(OK)
+		Response(InternalServerError, ErrorMedia)
+		Response(BadRequest)
+
+	})
+
+	Action("expire_cache", func() {
+		Routing(GET("expire_cache"))
+		Description("expire all cached entries")
+		Response(OK)
+	})
+
+})

@@ -1,0 +1,18 @@
+package: github.com/mrsinham/fb
+import:
+- package: github.com/goadesign/goa
+  version: <=1.2.0
+  subpackages:
+  - client
+  - cors
+  - design
+  - design/apidsl
+  - goatest
+  - logging/logrus
+  - middleware
+  - uuid
+- package: github.com/rs/cors
+  version: ^1.2.0
+- package: github.com/sirupsen/logrus
+  version: ^1.0.3
+- package: github.com/spf13/cobra

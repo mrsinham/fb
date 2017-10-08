@@ -1,27 +1,36 @@
 package main
 
+//go:generate goagen bootstrap -d github.com/mrsinham/fb/http/design -o http/goa
+
 import (
 	"context"
+	"flag"
+	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
-
-	"log"
-
+	"strings"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/goadesign/goa"
 	"github.com/goadesign/goa/logging/logrus"
 	"github.com/goadesign/goa/middleware"
-	goa2 "github.com/mrsinham/fb/http/goa"
+	"github.com/golang/groupcache"
+	fbgoa "github.com/mrsinham/fb/http/goa"
 	"github.com/mrsinham/fb/http/goa/app"
 	"github.com/rs/cors"
-	"github.com/sirupsen/logrus"
 )
 
 func main() {
 
-	//TODO: context, connection handling (keepalive), cache, http testing
+	//TODO: cache
+
+	peers := flag.String("pool", "http://localhost:8080", "server pool list")
+	port := flag.String("port", ":8081", "port to start the api")
+
+	flag.Parse()
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
@@ -38,27 +47,29 @@ func main() {
 	service.Use(middleware.ErrorHandler(service, true))
 	service.Use(middleware.Recover())
 
+	// random are less deterministic
+	rand.Seed(time.Now().UnixNano())
+
+	// cache
+	listOfPeers := strings.Split(*peers, ",")
+	hp := groupcache.NewHTTPPool(listOfPeers[0])
+	hp.Set(listOfPeers...)
+
 	// Mount "fizzbuzz" controller
-	c := goa2.NewFizzController(service)
+	c := fbgoa.NewFizzController(service)
 	app.MountFizzController(service, c)
 	// Mount "spec" controller
-	c2 := goa2.NewSpecController(service)
+	c2 := fbgoa.NewSpecController(service)
 	app.MountSpecController(service, c2)
 
-	// TODO: use logger
-
 	s := &http.Server{
-		// TODO: conf port
-		Addr:           ":8081",
-		Handler:        cors.Default().Handler(service.Mux),
-		ReadTimeout:    0,
-		WriteTimeout:   0,
-		TLSConfig:      nil,
-		MaxHeaderBytes: 0,
-		TLSNextProto:   nil,
-		ConnState:      nil,
-		ErrorLog:       nil,
+		Addr:         *port,
+		Handler:      cors.Default().Handler(service.Mux),
+		ReadTimeout:  20 * time.Second,
+		WriteTimeout: 20 * time.Second,
 	}
+
+	s.SetKeepAlivesEnabled(true)
 
 	go func() {
 		if err := s.ListenAndServe(); err != nil {
